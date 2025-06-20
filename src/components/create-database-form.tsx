@@ -1,16 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { PlusCircle, X, Save } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { toast } from "sonner"
-import { createNewDatabase } from "@/app/actions"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { PlusCircle, X, Save } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
+import { createNewDatabase } from "@/app/actions";
 
 const PROPERTY_TYPES = [
   { value: "rich_text", label: "Text" },
@@ -22,101 +35,113 @@ const PROPERTY_TYPES = [
   { value: "url", label: "URL" },
   { value: "email", label: "Email" },
   { value: "phone_number", label: "Phone Number" },
-]
+];
 
 interface CreateDatabaseFormProps {
-  pages: any[]
+  pages: any[];
 }
 
 export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
-  const router = useRouter()
-  const [title, setTitle] = useState("")
-  const [parentPageId, setParentPageId] = useState("")
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [parentPageId, setParentPageId] = useState("");
   interface Property {
-    name: string
-    type: string
-    options?: { name: string }[]
+    name: string;
+    type: string;
+    options?: { name: string }[];
   }
 
-  const [properties, setProperties] = useState<Property[]>([])
-  const [currentProperty, setCurrentProperty] = useState<Property>({ name: "", type: "" })
-  const [selectOptions, setSelectOptions] = useState<string[]>([])
-  const [currentOption, setCurrentOption] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [currentProperty, setCurrentProperty] = useState<Property>({
+    name: "",
+    type: "",
+  });
+  const [selectOptions, setSelectOptions] = useState<string[]>([]);
+  const [currentOption, setCurrentOption] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addProperty = () => {
-    if (!currentProperty.name || !currentProperty.type) return
+    if (!currentProperty.name || !currentProperty.type) return;
 
-    const newProperty = { ...currentProperty }
+    const newProperty = { ...currentProperty };
 
     // Add options for select and multi_select types
-    if (["select", "multi_select"].includes(currentProperty.type) && selectOptions.length > 0) {
-      newProperty.options = selectOptions.map((option) => ({ name: option }))
+    if (
+      ["select", "multi_select"].includes(currentProperty.type) &&
+      selectOptions.length > 0
+    ) {
+      newProperty.options = selectOptions.map((option) => ({ name: option }));
     }
 
-    setProperties([...properties, newProperty])
-    setCurrentProperty({ name: "", type: "" })
-    setSelectOptions([])
-    setCurrentOption("")
-  }
+    setProperties([...properties, newProperty]);
+    setCurrentProperty({ name: "", type: "" });
+    setSelectOptions([]);
+    setCurrentOption("");
+  };
 
   const removeProperty = (index: number) => {
-    const newProperties = [...properties]
-    newProperties.splice(index, 1)
-    setProperties(newProperties)
-  }
+    const newProperties = [...properties];
+    newProperties.splice(index, 1);
+    setProperties(newProperties);
+  };
 
   const addOption = () => {
-    if (!currentOption) return
-    setSelectOptions([...selectOptions, currentOption])
-    setCurrentOption("")
-  }
+    if (!currentOption) return;
+    setSelectOptions([...selectOptions, currentOption]);
+    setCurrentOption("");
+  };
 
   const removeOption = (index: number) => {
-    const newOptions = [...selectOptions]
-    newOptions.splice(index, 1)
-    setSelectOptions(newOptions)
-  }
-
+    const newOptions = [...selectOptions];
+    newOptions.splice(index, 1);
+    setSelectOptions(newOptions);
+  };
+  useEffect(() => {
+    if (!parentPageId && pages.length > 0) {
+      setParentPageId(pages[0].id);
+    }
+  }, [pages, parentPageId]);
   const handleSubmit = async () => {
     if (!title || !parentPageId) {
-      toast.error("Missing information",{
+      toast.error("Missing information", {
         description: "Please provide a title and select a parent page.",
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
-      const result = await createNewDatabase(title, properties, parentPageId)
+      const result = await createNewDatabase(title, properties, parentPageId);
 
       if (result.success) {
-        toast( "Database created",{
+        toast("Database created", {
           description: "Your database has been created successfully.",
-        })
-        router.push("/")
+        });
+        router.push("/");
       } else {
-        toast.error( "Error",{
+        toast.error("Error", {
           description: result.error || "Failed to create database.",
-        })
+        });
       }
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      toast.error("Error",{
+      toast.error("Error", {
         description: "An unexpected error occurred.",
-      })
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle>Database Information</CardTitle>
-          <CardDescription>Enter the basic information for your new database.</CardDescription>
+          <CardDescription>
+            Enter the basic information for your new database.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -137,12 +162,15 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
               <SelectContent>
                 {pages.map((page: any) => (
                   <SelectItem key={page.id} value={page.id}>
-                    {page.properties?.title?.title?.[0]?.plain_text || "Untitled Page"}
+                    {page.properties?.title?.title?.[0]?.plain_text ||
+                      "Untitled Page"}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-sm text-muted-foreground mt-1">The database will be created as a child of this page.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              The database will be created as a child of this page.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -150,20 +178,33 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
       <Card>
         <CardHeader>
           <CardTitle>Database Properties</CardTitle>
-          <CardDescription>Define the properties (columns) for your database.</CardDescription>
+          <CardDescription>
+            Define the properties (columns) for your database.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-4">
             {properties.map((property, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border rounded-md">
+              <div
+                key={index}
+                className="flex items-center justify-between p-3 border rounded-md"
+              >
                 <div>
                   <p className="font-medium">{property.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {PROPERTY_TYPES.find((t) => t.value === property.type)?.label}
-                    {property.options && ` (${property.options.length} options)`}
+                    {
+                      PROPERTY_TYPES.find((t) => t.value === property.type)
+                        ?.label
+                    }
+                    {property.options &&
+                      ` (${property.options.length} options)`}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => removeProperty(index)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeProperty(index)}
+                >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -178,14 +219,21 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
                   id="property-name"
                   placeholder="e.g., Status, Priority"
                   value={currentProperty.name}
-                  onChange={(e) => setCurrentProperty({ ...currentProperty, name: e.target.value })}
+                  onChange={(e) =>
+                    setCurrentProperty({
+                      ...currentProperty,
+                      name: e.target.value,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="property-type">Property Type</Label>
                 <Select
                   value={currentProperty.type}
-                  onValueChange={(value) => setCurrentProperty({ ...currentProperty, type: value })}
+                  onValueChange={(value) =>
+                    setCurrentProperty({ ...currentProperty, type: value })
+                  }
                 >
                   <SelectTrigger id="property-type">
                     <SelectValue placeholder="Select type" />
@@ -211,8 +259,8 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
                     onChange={(e) => setCurrentOption(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        e.preventDefault()
-                        addOption()
+                        e.preventDefault();
+                        addOption();
                       }
                     }}
                   />
@@ -227,7 +275,12 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
                       className="flex items-center bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-sm"
                     >
                       {option}
-                      <Button variant="ghost" size="icon" className="h-4 w-4 ml-1" onClick={() => removeOption(index)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 ml-1"
+                        onClick={() => removeOption(index)}
+                      >
                         <X className="h-3 w-3" />
                       </Button>
                     </div>
@@ -249,12 +302,16 @@ export function CreateDatabaseForm({ pages }: CreateDatabaseFormProps) {
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleSubmit} disabled={isSubmitting || !title || !parentPageId} className="w-full">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !title || !parentPageId}
+            className="w-full"
+          >
             {isSubmitting ? "Creating..." : "Create Database"}
             {!isSubmitting && <Save className="ml-2 h-4 w-4" />}
           </Button>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
