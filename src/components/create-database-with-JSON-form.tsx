@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Save } from "lucide-react";
 import {
@@ -25,7 +25,12 @@ import {
 import { toast } from "sonner";
 import { createNewDatabaseWithJSON } from "@/app/actions";
 import { Textarea } from "./ui/textarea";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "./ui/accordion";
 
 interface CreateDatabaseFormProps {
   pages: any[];
@@ -45,6 +50,12 @@ export function CreateDatabaseWithJSONForm({ pages }: CreateDatabaseFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [jsonInput, setJsonInput] = useState<string>("");
   const [jsonError, setJsonError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!parentPageId && pages.length > 0) {
+      setParentPageId(pages[0].id);
+    }
+  }, [pages, parentPageId]);
 
   const handleJsonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const input = e.target.value;
@@ -168,11 +179,13 @@ export function CreateDatabaseWithJSONForm({ pages }: CreateDatabaseFormProps) {
               Use Notion&apos;s property schema. For example:
             </p>
             <Accordion type="single" collapsible className="w-full">
-  <AccordionItem value="json-example">
-    <AccordionTrigger className="text-sm">Show example JSON</AccordionTrigger>
-    <AccordionContent>
-      <pre className="bg-muted p-4 rounded-md overflow-auto text-sm whitespace-pre-wrap">
-{`{
+              <AccordionItem value="json-example">
+                <AccordionTrigger className="text-sm">
+                  Show example JSON
+                </AccordionTrigger>
+                <AccordionContent>
+                  <pre className="bg-muted p-4 rounded-md overflow-auto text-sm whitespace-pre-wrap">
+                    {`{
   "Name": {
     "title": {}
   },
@@ -189,12 +202,10 @@ export function CreateDatabaseWithJSONForm({ pages }: CreateDatabaseFormProps) {
     "date": {}
   }
 }`}
-      </pre>
-    </AccordionContent>
-  </AccordionItem>
-</Accordion>
-
-
+                  </pre>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
           </div>
         </CardContent>
         <CardFooter>
